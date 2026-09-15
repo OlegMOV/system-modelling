@@ -1,0 +1,663 @@
+<title>Моделювання систем управління</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#EEF2F5;
+    --surface:#FFFFFF;
+    --ink:#101820;
+    --muted:#56606E;
+    --line:rgba(16,24,32,.16);
+    --grid:rgba(16,24,32,.055);
+    --signal:#B4700F;
+    --signal-soft:rgba(180,112,15,.14);
+    --trace:#1B7A86;
+    --trace-soft:rgba(27,122,134,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0A1119;
+      --surface:#121B26;
+      --ink:#E7ECF1;
+      --muted:#93A1AF;
+      --line:rgba(231,236,241,.16);
+      --grid:rgba(231,236,241,.055);
+      --signal:#FFB020;
+      --signal-soft:rgba(255,176,32,.14);
+      --trace:#52C7D4;
+      --trace-soft:rgba(82,199,212,.14);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0A1119;
+    --surface:#121B26;
+    --ink:#E7ECF1;
+    --muted:#93A1AF;
+    --line:rgba(231,236,241,.16);
+    --grid:rgba(231,236,241,.055);
+    --signal:#FFB020;
+    --signal-soft:rgba(255,176,32,.14);
+    --trace:#52C7D4;
+    --trace-soft:rgba(82,199,212,.14);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/28px 28px,
+      var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    line-height:1.65;
+    padding-inline:20px;
+  }
+  h1,h2,h3{text-wrap:balance;}
+  .wrap{max-width:1040px;margin-inline:auto;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.75rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--signal);
+    display:flex;align-items:center;gap:.55em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:.6em;height:.6em;
+    background:var(--signal);
+    display:inline-block;
+  }
+  mono{font-family:"IBM Plex Mono", ui-monospace, monospace;}
+
+  /* ---------- nav ---------- */
+  nav.top{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;
+    padding-block:.85rem;
+    background:color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.top .brand{
+    font-family:"IBM Plex Sans Condensed",sans-serif;
+    font-weight:700;font-size:.98rem;letter-spacing:.02em;
+    display:flex;align-items:baseline;gap:.6em;
+  }
+  nav.top .brand mono{color:var(--muted);font-size:.72rem;letter-spacing:.1em;}
+  nav.top .credits{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.75rem;letter-spacing:.06em;
+    color:var(--muted);
+    border:1px solid var(--line);
+    padding:.3em .7em;
+    white-space:nowrap;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{padding-block:3.2rem 2.2rem;}
+  .hero h1{
+    font-family:"IBM Plex Sans Condensed",sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:clamp(2.15rem, 3.6vw + 1rem, 3.5rem);
+    line-height:1.04;
+    letter-spacing:.005em;
+    margin:.6em 0 .45em;
+    max-width:14ch;
+  }
+  .hero .dek{
+    max-width:58ch;
+    color:var(--muted);
+    font-size:1.08rem;
+  }
+  .facts{
+    display:flex;flex-wrap:wrap;gap:0;
+    margin-top:1.8rem;
+    border:1px solid var(--line);
+    position:relative;
+  }
+  .facts::before,.facts::after,
+  .diagram-frame::before,.diagram-frame::after,
+  .assess::before,.assess::after{
+    content:"";position:absolute;width:14px;height:14px;
+    border-color:var(--signal);pointer-events:none;
+  }
+  .facts::before,.diagram-frame::before,.assess::before{top:-1px;left:-1px;border-top:2px solid;border-left:2px solid;}
+  .facts::after,.diagram-frame::after,.assess::after{bottom:-1px;right:-1px;border-bottom:2px solid;border-right:2px solid;}
+  .fact{
+    flex:1 1 150px;
+    padding:.95rem 1.1rem;
+    border-right:1px solid var(--line);
+  }
+  .fact:last-child{border-right:none;}
+  .fact .k{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .fact .v{font-size:1.02rem;font-weight:600;margin-top:.3em;}
+
+  .cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.8rem;}
+  .btn{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.82rem;letter-spacing:.04em;
+    padding:.75em 1.3em;
+    text-decoration:none;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    display:inline-flex;align-items:center;gap:.5em;
+  }
+  .btn:focus-visible{outline:2px solid var(--signal);outline-offset:3px;}
+  .btn.primary{background:var(--ink);color:var(--bg);}
+  .btn.primary:hover{background:var(--signal);border-color:var(--signal);color:#151008;}
+  .btn.ghost:hover{border-color:var(--signal);color:var(--signal);}
+
+  /* ---------- diagram ---------- */
+  .diagram-frame{
+    position:relative;
+    border:1px solid var(--line);
+    background:var(--surface);
+    padding:1.4rem 1.2rem 1.1rem;
+    margin-top:2.6rem;
+  }
+  .diagram-frame svg{width:100%;height:auto;display:block;}
+  .diagram-frame .cap{
+    margin-top:.7rem;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.72rem;color:var(--muted);
+    letter-spacing:.02em;
+  }
+  svg .block{fill:var(--surface);stroke:var(--ink);stroke-width:1.4;}
+  svg .sum{fill:var(--surface);stroke:var(--ink);stroke-width:1.4;}
+  svg .line{stroke:var(--ink);stroke-width:1.4;fill:none;}
+  svg .fb{stroke:var(--trace);stroke-width:1.4;fill:none;}
+  svg text{font-family:"IBM Plex Mono", monospace;fill:var(--ink);}
+  svg .lbl-sub{fill:var(--muted);}
+  svg .lbl-io{fill:var(--muted);}
+  @media (prefers-reduced-motion: reduce){
+    .pulse{display:none;}
+  }
+
+  /* ---------- sections ---------- */
+  section{padding-block:3.1rem;border-top:1px solid var(--line);}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.6rem;}
+  h2{
+    font-family:"IBM Plex Sans Condensed",sans-serif;
+    font-weight:700;text-transform:uppercase;letter-spacing:.01em;
+    font-size:clamp(1.4rem, 1.6vw + 1rem, 1.9rem);
+  }
+  .about p{max-width:68ch;font-size:1.02rem;}
+  .about .lede{font-size:1.12rem;color:var(--ink);max-width:66ch;}
+
+  /* modules rail */
+  .rail{position:relative;padding-left:2.6rem;}
+  .rail::before{
+    content:"";position:absolute;left:.62rem;top:.4rem;bottom:.4rem;
+    width:2px;background:var(--line);
+  }
+  .mod{position:relative;padding-block:1.15rem;border-bottom:1px solid var(--line);}
+  .mod:first-child{padding-top:0;}
+  .mod:last-child{border-bottom:none;padding-bottom:0;}
+  .mod::before{
+    content:"";position:absolute;left:-2.6rem;top:1.35rem;
+    width:11px;height:11px;background:var(--bg);
+    border:2px solid var(--signal);
+  }
+  .mod-head{display:flex;align-items:baseline;gap:.85rem;flex-wrap:wrap;}
+  .mod-num{font-family:"IBM Plex Mono",monospace;color:var(--signal);font-size:.85rem;}
+  .mod-title{font-weight:600;font-size:1.04rem;}
+  .mod-desc{color:var(--muted);margin-top:.35rem;max-width:62ch;font-size:.97rem;}
+
+  /* outcomes */
+  .outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0;border:1px solid var(--line);}
+  .outcome{
+    display:flex;gap:.8rem;padding:1.05rem 1.15rem;
+    border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+  .outcome svg{flex:none;width:1.15rem;height:1.15rem;margin-top:.15rem;}
+  .outcome p{margin:0;font-size:.96rem;}
+
+  /* tools */
+  .parts-list{display:flex;flex-wrap:wrap;gap:.6rem;}
+  .part{
+    font-family:"IBM Plex Mono",monospace;font-size:.82rem;
+    border:1px solid var(--line);
+    padding:.5em .85em;
+    color:var(--ink);
+    background:var(--surface);
+  }
+  .part b{color:var(--trace);font-weight:600;}
+
+  /* assessment */
+  .assess{position:relative;border:1px solid var(--line);background:var(--surface);padding:1.5rem 1.3rem;}
+  .bar{display:flex;width:100%;height:22px;border:1px solid var(--ink);overflow:hidden;}
+  .bar span{height:100%;}
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.6rem 1.2rem;margin-top:1.3rem;}
+  .legend-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;font-size:.92rem;border-bottom:1px solid var(--line);padding-bottom:.45rem;}
+  .legend-item .name{display:flex;align-items:center;gap:.55rem;}
+  .swatch{width:.75rem;height:.75rem;flex:none;}
+  .legend-item .pct{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;color:var(--muted);}
+
+  /* ---------- spec table ---------- */
+  .spec-table{
+    display:grid;grid-template-columns:minmax(200px,320px) 1fr;
+    border-top:1px solid var(--line);margin-top:1.8rem;max-width:64rem;
+  }
+  .spec-table dt,.spec-table dd{
+    padding:.7rem 0;border-bottom:1px solid var(--line);margin:0;
+  }
+  .spec-table dt{
+    font-family:"IBM Plex Mono",monospace;font-size:.72rem;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    padding-right:1rem;
+  }
+  .spec-table dd{font-size:.97rem;font-weight:500;}
+
+  /* ---------- theme blocks ---------- */
+  .theme{margin-bottom:2.4rem;}
+  .theme:last-child{margin-bottom:0;}
+  .theme-head{
+    display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;
+    padding-bottom:.8rem;border-bottom:2px solid var(--ink);margin-bottom:.2rem;
+  }
+  .theme-num{
+    font-family:"IBM Plex Mono",monospace;font-size:.8rem;
+    color:var(--signal);letter-spacing:.06em;
+  }
+  .theme-title{
+    font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;
+    font-size:clamp(1.05rem,1.4vw + .8rem,1.3rem);text-transform:uppercase;
+    letter-spacing:.005em;flex:1 1 auto;
+  }
+  .theme-hours{
+    font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--muted);
+    white-space:nowrap;font-variant-numeric:tabular-nums;
+  }
+  .session-tag{
+    font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--muted);
+  }
+  .session-hours{
+    font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--trace);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .mod.practical .mod-title{color:var(--muted);}
+  .mod ul.topics{margin:.5rem 0 0;padding-left:1.1rem;color:var(--muted);font-size:.93rem;}
+  .mod ul.topics li{margin-bottom:.2rem;}
+
+  details.self-study{
+    margin-top:1.1rem;border:1px solid var(--line);background:var(--surface);
+  }
+  details.self-study summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:.9rem 1.1rem;
+    font-family:"IBM Plex Mono",monospace;font-size:.82rem;
+  }
+  details.self-study summary::-webkit-details-marker{display:none;}
+  details.self-study summary::after{
+    content:"+";color:var(--signal);font-size:1.1rem;flex:none;
+  }
+  details.self-study[open] summary::after{content:"–";}
+  details.self-study .q-body{padding:0 1.1rem 1.2rem;}
+  .q-groups{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:1.3rem 1.6rem;
+  }
+  .q-group h4{
+    font-family:"IBM Plex Mono",monospace;font-size:.72rem;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--signal);margin:0 0 .5rem;font-weight:600;
+  }
+  .q-group ol{margin:0;padding-left:1.15rem;font-size:.88rem;color:var(--muted);}
+  .q-group li{margin-bottom:.45rem;}
+
+  footer{padding-block:2.4rem 3rem;color:var(--muted);font-size:.88rem;}
+  footer .foot-row{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline;}
+  footer mono{color:var(--muted);}
+
+  @media (max-width:640px){
+    .rail{padding-left:2.1rem;}
+    .mod::before{left:-2.1rem;}
+    .facts{flex-direction:column;}
+    .fact{border-right:none;border-bottom:1px solid var(--line);}
+    .fact:last-child{border-bottom:none;}
+    .outcome{border-right:none;}
+  }
+</style>
+
+<nav class="top">
+  <div class="brand">174 <mono>МОДЕЛЮВАННЯ СИСТЕМ УПРАВЛІННЯ</mono></div>
+  <div class="credits">6 кредитів · ECTS</div>
+</nav>
+
+<div class="wrap">
+
+  <header class="hero" id="top">
+    <div class="eyebrow">Вибіркова дисципліна · Спец. 174 · VII семестр</div>
+    <h1>Моделювання систем управління</h1>
+    <p class="dek">Від диференціального рівняння об'єкта до цифрового двійника: будуємо математичні моделі, переходимо до дискретної та імітаційної форми, аналізуємо системи в умовах невизначеності — з перевіркою в Simulink, AnyLogic та Python. Підсумковий контроль — залік.</p>
+
+    <div class="facts">
+      <div class="fact"><div class="k">Спеціальність</div><div class="v">174 · Автоматизація, КІТ та робототехніка</div></div>
+      <div class="fact"><div class="k">Обсяг</div><div class="v">6 кредитів ECTS · 180 год</div></div>
+      <div class="fact"><div class="k">Семестр</div><div class="v">VII, бакалаврат</div></div>
+      <div class="fact"><div class="k">Контроль</div><div class="v">Залік</div></div>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn primary" href="#modules">Структура курсу</a>
+      <a class="btn ghost" href="#outcomes">Результати навчання</a>
+    </div>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Структурна схема одноконтурної системи автоматичного управління із зворотним зв'язком">
+        <defs>
+          <marker id="ah-ink" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink)"/>
+          </marker>
+          <marker id="ah-trace" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--trace)"/>
+          </marker>
+        </defs>
+
+        <text x="6" y="119" class="lbl-io" font-size="13">R(s)</text>
+        <line x1="34" y1="115" x2="76" y2="115" class="line" marker-end="url(#ah-ink)"/>
+
+        <circle cx="92" cy="115" r="15" class="sum"/>
+        <text x="88" y="106" font-size="11">+</text>
+        <text x="88" y="130" font-size="11">−</text>
+
+        <line x1="107" y1="115" x2="148" y2="115" class="line" marker-end="url(#ah-ink)"/>
+
+        <rect x="150" y="88" width="120" height="54" class="block"/>
+        <text x="210" y="112" font-size="13" text-anchor="middle">Регулятор</text>
+        <text x="210" y="130" font-size="12" text-anchor="middle" class="lbl-sub">Gc(s) · ПІД</text>
+
+        <line x1="270" y1="115" x2="312" y2="115" class="line" marker-end="url(#ah-ink)"/>
+
+        <rect x="314" y="88" width="150" height="54" class="block"/>
+        <text x="389" y="112" font-size="13" text-anchor="middle">Об'єкт керування</text>
+        <text x="389" y="130" font-size="12" text-anchor="middle" class="lbl-sub">Gp(s)</text>
+
+        <line x1="464" y1="115" x2="508" y2="115" class="line" marker-end="url(#ah-ink)"/>
+        <text x="514" y="119" class="lbl-io" font-size="13">Y(s)</text>
+
+        <line x1="480" y1="115" x2="480" y2="196" class="fb"/>
+        <rect x="330" y="180" width="120" height="32" class="block"/>
+        <text x="390" y="200" font-size="12" text-anchor="middle" class="lbl-sub">Датчик H(s)</text>
+        <line x1="480" y1="196" x2="450" y2="196" class="fb" marker-end="url(#ah-trace)"/>
+        <line x1="330" y1="196" x2="92" y2="196" class="fb"/>
+        <line x1="92" y1="196" x2="92" y2="131" class="fb" marker-end="url(#ah-trace)"/>
+
+        <circle class="pulse" r="4" fill="var(--signal)">
+          <animateMotion dur="4.2s" repeatCount="indefinite"
+            path="M34,115 L480,115" />
+        </circle>
+        <circle class="pulse" r="4" fill="var(--trace)">
+          <animateMotion dur="4.2s" begin="1.4s" repeatCount="indefinite"
+            path="M480,150 L480,196 L92,196 L92,131" />
+        </circle>
+      </svg>
+      <div class="cap">Одноконтурна САК: e(s) = R(s) − H(s)·Y(s); W(s) = Gc(s)Gp(s) / (1 + Gc(s)Gp(s)H(s))</div>
+    </div>
+  </header>
+
+  <section class="about" id="about">
+    <div class="section-head"><h2>Про дисципліну</h2></div>
+    <p class="lede">Курс складається з двох тем: спершу — математичний апарат опису систем управління (диференціальні рівняння, простір станів, передавальні функції, перехід до дискретної форми), далі — комп'ютерні, імітаційні та інтелектуальні методи моделювання (Simulink/AnyLogic, стохастичне моделювання, нечітка логіка, нейромережі, цифрові двійники).</p>
+    <dl class="spec-table">
+      <dt>Рівень вищої освіти</dt><dd>Перший (бакалаврський)</dd>
+      <dt>Галузь знань</dt><dd>17 Електроніка, автоматизація та електронні комунікації</dd>
+      <dt>Спеціальність</dt><dd>174 Автоматизація, комп'ютерно-інтегровані технології та робототехніка</dd>
+      <dt>Освітня програма</dt><dd>Автоматизація та комп'ютерно-інтегровані технології</dd>
+      <dt>Статус дисципліни</dt><dd>Вибіркова</dd>
+      <dt>Загальний обсяг</dt><dd>6 кредитів ECTS (180 год)</dd>
+      <dt>Форма підсумкового контролю</dt><dd>Залік</dd>
+      <dt>Термін викладання</dt><dd>VII семестр</dd>
+      <dt>Мова викладання</dt><dd>Українська</dd>
+    </dl>
+  </section>
+
+  <section id="modules">
+    <div class="section-head">
+      <h2>Структура курсу</h2>
+      <mono style="font-size:.78rem;color:var(--muted);">Змістовий модуль 1 · семестр VII · 2 теми · 4 лекції · 4 практичні</mono>
+    </div>
+
+    <div class="theme">
+      <div class="theme-head">
+        <span class="theme-num">Тема 1</span>
+        <span class="theme-title">Теоретико-математичні засади моделювання систем управління</span>
+        <span class="theme-hours">76 год · 12 ауд / 64 сам</span>
+      </div>
+      <div class="rail">
+        <div class="mod">
+          <div class="mod-head"><span class="mod-num">Лекція 1</span><a href="./ms_01.html" class="mod-title">Загальні положення та визначення в моделюванні систем</a><span class="session-hours">2 ауд</span></div>
+          <div class="session-tag">Заняття 1</div>
+          <ul class="topics">
+            <li>Моделювання. Основні поняття та визначення</li>
+            <li>Види моделей та основні етапи моделювання</li>
+            <li>Класифікація методів моделювання</li>
+          </ul>
+        </div>
+        <div class="mod practical">
+          <div class="mod-head"><span class="mod-num">Практичне 1</span><span class="mod-title">Практичне заняття 1</span><span class="session-hours">4 год</span></div>
+          <div class="session-tag">Заняття 2</div>
+        </div>
+        <div class="mod">
+          <div class="mod-head"><span class="mod-num">Лекція 2</span><a href="./ms_03.html" class="mod-title">Методи математичного моделювання систем управління</a><span class="session-hours">2 ауд</span></div>
+          <div class="session-tag">Заняття 3</div>
+          <ul class="topics">
+            <li>Загальна характеристика методів математичного моделювання систем управління</li>
+            <li>Методи моделювання систем управління на ЕОМ. Перехід від передаточної функції до простору стану</li>
+            <li>Метод пониження порядку похідної</li>
+            <li>Метод послідовного інтегрування</li>
+            <li>Структурний метод моделювання</li>
+          </ul>
+        </div>
+        <div class="mod practical">
+          <div class="mod-head"><span class="mod-num">Практичне 2</span><span class="mod-title">Практичне заняття 2</span><span class="session-hours">4 год</span></div>
+          <div class="session-tag">Заняття 4</div>
+        </div>
+      </div>
+      <details class="self-study">
+        <summary><span>Самостійна підготовка · 64 год</span><span class="session-tag">20 питань · міжзборовий період</span></summary>
+        <div class="q-body">
+          <div class="q-groups">
+            <div class="q-group">
+              <h4>Базові поняття та методологія</h4>
+              <ol>
+                <li>У чому полягає принципова різниця між поняттями «об'єкт управління» та «система управління»?</li>
+                <li>Які критерії використовуються для перевірки адекватності математичної моделі реальному об'єкту?</li>
+                <li>Що таке робастність моделі і чому вона є важливою при практичній реалізації систем управління?</li>
+                <li>Назвіть ключові етапи концептуалізації при переході від фізичного об'єкта до його математичного опису.</li>
+                <li>У чому полягають переваги та недоліки фізичного моделювання порівняно з математичним?</li>
+              </ol>
+            </div>
+            <div class="q-group">
+              <h4>Математичний опис динамічних систем</h4>
+              <ol start="6">
+                <li>Як виконується лінеаризація нелінійних диференціальних рівнянь у околі робочої точки за допомогою рядів Тейлора?</li>
+                <li>У чому полягає фізичний зміст передавальної функції динамічної ланки?</li>
+                <li>За яких початкових умов визначається передавальна функція системи?</li>
+                <li>Як пов'язані між собою імпульсна перехідна та вагова функції системи?</li>
+                <li>Чим відрізняється опис системи у формалізмі «вхід-вихід» від опису в «просторі станів»?</li>
+              </ol>
+            </div>
+            <div class="q-group">
+              <h4>Простір станів та дискретні системи</h4>
+              <ol start="11">
+                <li>Як за матрицями стану (A, B, C, D) визначити передавальну функцію багатовимірної системи (MIMO)?</li>
+                <li>Що таке вектор стану системи і як обираються змінні стану для механічних та електричних об'єктів?</li>
+                <li>У чому полягає теорема Котельникова–Шеннона (Найквіста) та як її порушення («aliasing») впливає на дискретну модель?</li>
+                <li>Як здійснюється перехід від безперервної передавальної функції W(s) до дискретної W(z) за допомогою Z-перетворення?</li>
+                <li>Що таке екстраполятор нульового порядку (Zero-Order Hold) та яка його роль у моделюванні цифрових регуляторів?</li>
+              </ol>
+            </div>
+            <div class="q-group">
+              <h4>Аналіз та специфіка моделей</h4>
+              <ol start="16">
+                <li>Чим відрізняються детерміновані математичні моделі від стохастичних на теоретичному рівні?</li>
+                <li>Що таке нулі та полюси передавальної функції і як їхнє розташування на комплексній площині впливає на динаміку?</li>
+                <li>Як моделюються ланки із чистим запізненням (транспортним запізненням) і як застосовується апроксимація Паде?</li>
+                <li>У чому полягає суть принципу суперпозиції для лінійних моделей систем управління?</li>
+                <li>Які особливості мають математичні моделі систем із розподіленими параметрами порівняно з зосередженими?</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="theme">
+      <div class="theme-head">
+        <span class="theme-num">Тема 2</span>
+        <span class="theme-title">Комп'ютерні, імітаційні та інтелектуальні методи моделювання</span>
+        <span class="theme-hours">74 год · 10 ауд / 64 сам</span>
+      </div>
+      <div class="rail">
+        <div class="mod">
+          <div class="mod-head"><span class="mod-num">Лекція 3</span><span class="mod-title">Імітаційне та комп'ютерне моделювання складних систем</span><span class="session-hours">2 ауд</span></div>
+          <div class="session-tag">Заняття 5</div>
+          <ul class="topics">
+            <li>Принципи та методологія імітаційного моделювання</li>
+            <li>Подійно-орієнтоване (Discrete-Event) та агентне моделювання складних систем</li>
+            <li>Сучасні програмні середовища моделювання (Simulink/MATLAB, AnyLogic, Python Scientific Stack)</li>
+            <li>Методи збору, обробки та візуалізації результатів комп'ютерного експерименту</li>
+          </ul>
+        </div>
+        <div class="mod practical">
+          <div class="mod-head"><span class="mod-num">Практичне 3</span><span class="mod-title">Практичне заняття 3</span><span class="session-hours">4 год</span></div>
+          <div class="session-tag">Заняття 6</div>
+        </div>
+        <div class="mod">
+          <div class="mod-head"><span class="mod-num">Лекція 4</span><span class="mod-title">Моделювання в умовах невизначеності та інтелектуальні системи управління</span><span class="session-hours">2 ауд</span></div>
+          <div class="session-tag">Заняття 7</div>
+          <ul class="topics">
+            <li>Стохастичне моделювання: врахування випадкових процесів та шумів вимірювання (методи Монте-Карло)</li>
+            <li>Моделювання систем із нечіткою логікою (Fuzzy Logic) та нечіткими регуляторами</li>
+            <li>Застосування штучних нейронних мереж для ідентифікації та управління динамічними об'єктами</li>
+            <li>Концепція цифрових двійників (Digital Twins) у сучасній індустрії</li>
+          </ul>
+        </div>
+        <div class="mod practical">
+          <div class="mod-head"><span class="mod-num">Практичне 4</span><span class="mod-title">Практичне заняття 4</span><span class="session-hours">2 год</span></div>
+          <div class="session-tag">Заняття 8</div>
+        </div>
+      </div>
+      <details class="self-study">
+        <summary><span>Самостійна підготовка · 64 год</span><span class="session-tag">20 питань · міжзборовий період</span></summary>
+        <div class="q-body">
+          <div class="q-groups">
+            <div class="q-group">
+              <h4>Імітаційне та обчислювальне моделювання</h4>
+              <ol>
+                <li>У яких випадках аналітичне рішення математичної моделі є неможливим або недоцільним, що вимагає застосування імітаційного моделювання?</li>
+                <li>Чим дискретно-подійне моделювання (Discrete-Event Simulation) відрізняється від безперервного моделювання динамічних систем?</li>
+                <li>У чому полягає суть агентного моделювання (Agent-Based Modeling) та які його переваги при описі складних екосистем?</li>
+                <li>Які алгоритми чисельного інтегрування (Ейлера, Рунге-Кутти 4-го порядку) використовуються в Simulink/Python і як обрати крок інтегрування?</li>
+                <li>Що таке жорсткі диференціальні рівняння (Stiff ODEs) та які спеціальні чисельні методи застосовуються для їх моделювання?</li>
+              </ol>
+            </div>
+            <div class="q-group">
+              <h4>Стохастичне моделювання та аналіз даних</h4>
+              <ol start="6">
+                <li>Як працює метод Монте-Карло для оцінки надійності та стійкості систем управління за наявності випадкових параметрів?</li>
+                <li>Що таке «білий шум» та «кольоровий шум» у контексті моделювання завад у каналах вимірювання?</li>
+                <li>Які генератори псевдовипадкових чисел використовуються в комп'ютерному моделюванні та які вимоги до них висуваються?</li>
+                <li>Як виконується первинна обробка та фільтрація експериментальних даних (наприклад, фільтром ковзного середнього) перед ідентифікацією об'єкта?</li>
+                <li>Що таке спектральний аналіз сигналів і як швидке перетворення Фур'є (FFT) застосовується при аналізі результатів моделювання?</li>
+              </ol>
+            </div>
+            <div class="q-group">
+              <h4>Нечітка логіка та нейромережі в моделюванні</h4>
+              <ol start="11">
+                <li>З яких основних блоків складається система нечіткого виведення (Fuzzifier, Rule Base, Inference Engine, Defuzzifier)?</li>
+                <li>Чим відрізняються алгоритми нечіткого виведення Мамдані (Mamdani) та Сугено (Takagi-Sugeno)?</li>
+                <li>Як штучні нейронні мережі (наприклад, LSTM або MLP) використовуються для побудови моделей типу «Black-Box»?</li>
+                <li>У чому полягає проблема перенавчання (Overfitting) нейромережевої моделі та як її уникнути під час валідації?</li>
+                <li>Як здійснюється гібридне моделювання (Neuro-Fuzzy, ANFIS) і які його переваги перед класичними підходами?</li>
+              </ol>
+            </div>
+            <div class="q-group">
+              <h4>Цифрові двійники та сучасне програмне забезпечення</h4>
+              <ol start="16">
+                <li>Чим концепція цифрового двійника (Digital Twin) відрізняється від звичайної 3D/CAD або імітаційної моделі об'єкта?</li>
+                <li>Як реалізується двосторонній обмін даними в режимі реального часу між фізичним об'єктом та його цифровим двійником (з використанням IoT/MQTT)?</li>
+                <li>Які переваги дає використання середовища AnyLogic порівняно з MATLAB/Simulink при моделюванні логістичних та виробничих систем?</li>
+                <li>Що таке co-simulation (спільне моделювання) та як протокол FMI (Functional Mock-up Interface) дозволяє об'єднувати моделі з різних програмних середовищ?</li>
+                <li>Як оцінюється обчислювальна складність моделей для їх використання в системах управління реального часу (Hardware-in-the-Loop, HIL)?</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="outcomes">
+    <div class="section-head"><h2>Результати навчання</h2></div>
+    <div class="outcomes">
+      <div class="outcome">
+        <svg viewBox="0 0 20 20"><path d="M3 10.5 L8 15 L17 5" fill="none" stroke="var(--signal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Будувати математичні моделі об'єктів управління у формі диференціальних/різницевих рівнянь, передавальних функцій та в просторі станів.</p>
+      </div>
+      <div class="outcome">
+        <svg viewBox="0 0 20 20"><path d="M3 10.5 L8 15 L17 5" fill="none" stroke="var(--signal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Виконувати перехід між неперервними та дискретними моделями систем управління (z-перетворення, квантування).</p>
+      </div>
+      <div class="outcome">
+        <svg viewBox="0 0 20 20"><path d="M3 10.5 L8 15 L17 5" fill="none" stroke="var(--signal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Розробляти імітаційні моделі складних систем — подійно-орієнтовані та агентні — у Simulink/MATLAB, AnyLogic і Python.</p>
+      </div>
+      <div class="outcome">
+        <svg viewBox="0 0 20 20"><path d="M3 10.5 L8 15 L17 5" fill="none" stroke="var(--signal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Застосовувати стохастичне моделювання, нечітку логіку та нейронні мережі для аналізу систем в умовах невизначеності.</p>
+      </div>
+      <div class="outcome">
+        <svg viewBox="0 0 20 20"><path d="M3 10.5 L8 15 L17 5" fill="none" stroke="var(--signal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Пояснювати концепцію цифрових двійників і застосовувати co-simulation (FMI) для об'єднання моделей із різних середовищ.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tools">
+    <div class="section-head"><h2>Інструменти моделювання</h2></div>
+    <div class="parts-list">
+      <span class="part"><b>MATLAB / Simulink</b> · State-Space, z-перетворення</span>
+      <span class="part"><b>AnyLogic</b> · подійне та агентне моделювання</span>
+      <span class="part"><b>Python</b> · scientific stack (NumPy/SciPy)</span>
+      <span class="part"><b>Fuzzy Logic Toolbox</b> · Mamdani / Sugeno</span>
+      <span class="part"><b>ANFIS / нейромережі</b> · ідентифікація об'єктів</span>
+      <span class="part"><b>FMI · co-simulation</b></span>
+    </div>
+  </section>
+
+  <section id="assessment">
+    <div class="section-head">
+      <h2>Розподіл навчального часу</h2>
+      <mono style="font-size:.78rem;color:var(--muted);">180 год / 6 кредитів · 22 ауд (0,7) / 158 сам (5,3)</mono>
+    </div>
+    <div class="assess">
+      <div class="bar">
+        <span style="width:4.4%;background:var(--trace);"></span>
+        <span style="width:7.8%;background:var(--signal);"></span>
+        <span style="width:71.1%;background:var(--ink);"></span>
+        <span style="width:16.7%;background:var(--ink);opacity:.35;"></span>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><span class="name"><span class="swatch" style="background:var(--trace);"></span>Лекційні</span><span class="pct">8 год</span></div>
+        <div class="legend-item"><span class="name"><span class="swatch" style="background:var(--signal);"></span>Практичні заняття</span><span class="pct">14 год</span></div>
+        <div class="legend-item"><span class="name"><span class="swatch" style="background:var(--ink);"></span>Самостійна робота <mono style="font-size:.7rem;color:var(--muted);">вкл. контрольну роботу за індивідуальним варіантом</mono></span><span class="pct">128 год</span></div>
+        <div class="legend-item"><span class="name"><span class="swatch" style="background:var(--ink);opacity:.35;"></span>Залік</span><span class="pct">30 год</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-row">
+      <div>Кафедра автоматизації та комп'ютерно-інтегрованих технологій <mono>· спец. 174</mono></div>
+      <div><mono>Моделювання систем управління · вибіркова · залік</mono></div>
+    </div>
+  </footer>
+</div>
