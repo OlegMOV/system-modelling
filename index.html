@@ -311,6 +311,23 @@
   .q-group ol{margin:0;padding-left:1.15rem;font-size:.88rem;color:var(--muted);}
   .q-group li{margin-bottom:.45rem;}
 
+  /* ---------- topics list ---------- */
+  ol.topic-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);counter-reset:t;}
+  ol.topic-list li{
+    counter-increment:t;
+    display:grid;grid-template-columns:2.6rem 1fr auto;gap:.9rem;align-items:baseline;
+    padding:.7rem 0;border-bottom:1px solid var(--line);font-size:.96rem;
+  }
+  ol.topic-list li::before{
+    content:counter(t, decimal-leading-zero);
+    font-family:"IBM Plex Mono",monospace;font-size:.8rem;color:var(--signal);
+  }
+  ol.topic-list code{font-family:"IBM Plex Mono",monospace;font-size:.88em;color:var(--trace);}
+  ol.topic-list .code{
+    font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--muted);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+
   footer{padding-block:2.4rem 3rem;color:var(--muted);font-size:.88rem;}
   footer .foot-row{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline;}
   footer mono{color:var(--muted);}
@@ -652,6 +669,46 @@
         <div class="legend-item"><span class="name"><span class="swatch" style="background:var(--ink);opacity:.35;"></span>Залік</span><span class="pct">30 год</span></div>
       </div>
     </div>
+  </section>
+
+  <section id="topics">
+    <div class="section-head">
+      <h2>Перелік тем</h2>
+      <mono style="font-size:.78rem;color:var(--muted);">31 тема</mono>
+    </div>
+    <ol class="topic-list">
+      <li><span>Поняття моделі та оцінка її властивостей (адекватність, повнота, економічність) на прикладі військово-технічного або технічного об'єкта.</span><span class="code">[209]</span></li>
+      <li><span>Методологія верифікації та валідації моделей систем управління: аналіз типових помилок та методи їх запобігання.</span><span class="code">[202]</span></li>
+      <li><span>Класифікація моделей за природою, типом процесів та рівнем деталізації: обґрунтування вибору типу моделі для складних об'єктів.</span><span class="code">[201]</span></li>
+      <li><span>Дослідження ітераційності 8 етапів процесу моделювання систем управління на наскрізному практичному прикладі.</span><span class="code">[112]</span></li>
+      <li><span>Порівняльний аналіз аналітичного, числового, імітаційного та евристичного методів моделювання систем управління.</span><span class="code">[104]</span></li>
+      <li><span>Порівняльна характеристика та сфери застосування дискретно-подієвого моделювання, системної динаміки та агентного моделювання.</span><span class="code">[103]</span></li>
+      <li><span>Реалізація детермінованої аналітичної моделі балістичної траєкторії та оцінка її адекватності за реальними даними.</span><span class="code">[203]</span></li>
+      <li><span>Стохастичне моделювання методом Монте-Карло: оцінка ймовірнісних характеристик систем та аналіз збіжності результатів.</span><span class="code">[206]</span></li>
+      <li><span>Форми математичного опису лінійних систем управління (диференціальні рівняння, передавальні функції, простір станів) та алгоритми зв'язку між ними.</span><span class="code">[106]</span></li>
+      <li><span>Канонічна керована та спостережувана форми: алгоритми та програмна реалізація переходу від передавальної функції до рівнянь стану.</span><span class="code">[110]</span></li>
+      <li><span>Метод зниження порядку похідної для зведення диференціальних рівнянь <i>n</i>-го порядку до системи рівнянь першого порядку та його комп'ютерна реалізація.</span><span class="code">[108]</span></li>
+      <li><span>Метод допоміжної змінної для опису диференціальних рівнянь з похідними в правій частині та його застосування.</span><span class="code">[105]</span></li>
+      <li><span>Метод послідовного інтегрування: побудова та комп'ютерна реалізація структурних схем моделювання систем управління.</span><span class="code">[111]</span></li>
+      <li><span>Структурний метод моделювання: дослідження типових динамічних ланок та еквівалентні перетворення їх з'єднань.</span><span class="code">[107]</span></li>
+      <li><span>Побудова математичної моделі замкненої системи управління структурним методом (на прикладі системи наведення або стабілізації).</span><span class="code">[212]</span></li>
+      <li><span>Порівняльний аналіз методів побудови моделей СУ на ЕОМ: зниження порядку, послідовне інтегрування та структурний метод.</span><span class="code">[116]</span></li>
+      <li><span>Чисельне моделювання та аналіз нелінійної динаміки об’єктів управління засобами Python (<code>scipy.integrate.solve_ivp</code>).</span><span class="code">[113]</span></li>
+      <li><span>Методологія ідентифікації систем управління: структурний та параметричний аналіз у загальному циклі розробки СУ.</span><span class="code">[210]</span></li>
+      <li><span>Активна та пасивна ідентифікація об'єктів управління: вимоги до інформативності вхідних сигналів та умови застосування.</span><span class="code">[114]</span></li>
+      <li><span>Комплексний аналіз критеріїв якості ідентифікації систем (MSE, RMSE, ISE, IAE, ITAE, <i>R</i><sup>2</sup>) та сфера їх застосування.</span><span class="code">[117]</span></li>
+      <li><span>Непараметрична ідентифікація систем управління за перехідними характеристиками із застосуванням методу дотичної.</span><span class="code">[101]</span></li>
+      <li><span>Параметрична ідентифікація методом найменших квадратів (МНК): аналітичні розв'язки та програмна реалізація в Python.</span><span class="code">[207]</span></li>
+      <li><span>Рекурентний метод найменших квадратів (РМНК) із фактором забування для ідентифікації нестаціонарних об'єктів.</span><span class="code">[102]</span></li>
+      <li><span>Порівняльний аналіз конкуруючих моделей об'єктів управління за критеріями якості з урахуванням принципу Оккама (критерії AIC, BIC).</span><span class="code">[205]</span></li>
+      <li><span>Дослідження керованості та спостережуваності систем автоматичного управління за критеріями Калмана та їх фізичний зміст.</span><span class="code">[213]</span></li>
+      <li><span>Практичні наслідки втрати керованості та спостережуваності в складних контурах автоматичного управління.</span><span class="code">[118]</span></li>
+      <li><span>Декомпозиція Калмана та аналіз принципу дуальності керованості і спостережуваності в системах управління.</span><span class="code">[204]</span></li>
+      <li><span>Методологічний цикл та етапи побудови імітаційної моделі складного об'єкта управління.</span><span class="code">[208]</span></li>
+      <li><span>Порівняльний аналіз формальних апаратів опису імітаційних моделей (DEVS, statecharts, мережі Петрі).</span><span class="code">[211]</span></li>
+      <li><span>Дискретно-подієве моделювання систем масового обслуговування (черги, ресурси) засобами Python (бібліотека <code>simpy</code>).</span><span class="code">[115]</span></li>
+      <li><span>Моделювання графа станів складної системи управління у вигляді класу Python (патерн «Стан»).</span><span class="code">[109]</span></li>
+    </ol>
   </section>
 
   <footer>
